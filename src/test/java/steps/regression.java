@@ -22,6 +22,9 @@ public class regression {
 	    driver.get("https://www.target.com/");
 	    driver.manage().window().maximize();
 	    driver.manage().timeouts().implicitlyWait(30,TimeUnit.SECONDS);
+	    
+	    // hi, how are you, i am fine.
+	    // how is the weather today?
 		
 	}
 
