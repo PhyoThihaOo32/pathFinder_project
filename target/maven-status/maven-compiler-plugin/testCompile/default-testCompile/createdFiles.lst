@@ -1,4 +1,14 @@
+AdvanceSelenium/switchWindowsByTitles.class
+AdvanceSelenium/mouseHover.class
+steps/regression2.class
 common/googleBase.class
-steps/searchProducts.class
+AdvanceSelenium/switchNewWindow.class
+steps/smoke.class
+runner/regressionTest.class
 pages/googleHomePage.class
-runner/testRunner.class
+AdvanceSelenium/dragAndDropPractice.class
+AdvanceSelenium/checkBox.class
+steps/searchProducts.class
+AdvanceSelenium/dropDown.class
+steps/regression.class
+runner/smokeTest.class
