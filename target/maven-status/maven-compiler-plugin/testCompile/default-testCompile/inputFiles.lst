@@ -1,4 +1,14 @@
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/checkBox.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/dragAndDropPractice.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/dropDown.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/mouseHover.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/switchNewWindow.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/AdvanceSelenium/switchWindowsByTitles.java
 /Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/common/googleBase.java
 /Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/pages/googleHomePage.java
-/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/runner/testRunner.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/runner/regressionTest.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/runner/smokeTest.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/steps/regression.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/steps/regression2.java
 /Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/steps/searchProducts.java
+/Users/phyothihaoo/eclipse-workspace/com.google.searchProducts/src/test/java/steps/smoke.java
