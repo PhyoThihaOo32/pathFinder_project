@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 /** The product catalogue shown after a successful sign-in. */
@@ -51,12 +52,15 @@ public class InventoryPage extends BasePage {
         new Select(visible(SORT_DROPDOWN)).selectByVisibleText(visibleOption);
     }
 
+    /** The button swaps to "Remove" once the item is in the cart, which confirms the click landed. */
     public void addToCart(String productName) {
-        click(addToCartButton(productName));
+        clickExpecting(addToCartButton(productName),
+                ExpectedConditions.presenceOfElementLocated(removeButton(productName)));
     }
 
     public void removeFromCart(String productName) {
-        click(By.id("remove-" + slug(productName)));
+        clickExpecting(removeButton(productName),
+                ExpectedConditions.presenceOfElementLocated(addToCartButton(productName)));
     }
 
     /**
@@ -65,6 +69,10 @@ public class InventoryPage extends BasePage {
      */
     private By addToCartButton(String productName) {
         return By.id("add-to-cart-" + slug(productName));
+    }
+
+    private By removeButton(String productName) {
+        return By.id("remove-" + slug(productName));
     }
 
     private String slug(String productName) {
@@ -81,11 +89,11 @@ public class InventoryPage extends BasePage {
     }
 
     public void openCart() {
-        click(CART_LINK);
+        clickExpecting(CART_LINK, ExpectedConditions.urlContains("/cart.html"));
     }
 
     public void logout() {
-        click(MENU_BUTTON);
-        click(LOGOUT_LINK);
+        clickExpecting(MENU_BUTTON, ExpectedConditions.elementToBeClickable(LOGOUT_LINK));
+        clickExpecting(LOGOUT_LINK, ExpectedConditions.urlContains("saucedemo.com/"));
     }
 }

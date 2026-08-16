@@ -3,6 +3,7 @@ package io.github.phyothihaoo.pathfinder.pages;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /** The basket review screen at {@code /cart.html}. */
 public class CartPage extends BasePage {
@@ -28,10 +29,12 @@ public class CartPage extends BasePage {
     }
 
     public void proceedToCheckout() {
-        click(CHECKOUT_BUTTON);
+        clickExpecting(CHECKOUT_BUTTON,
+                ExpectedConditions.urlContains("/checkout-step-one.html"));
     }
 
     public void continueShopping() {
-        click(CONTINUE_SHOPPING_BUTTON);
+        clickExpecting(CONTINUE_SHOPPING_BUTTON,
+                ExpectedConditions.urlContains("/inventory.html"));
     }
 }

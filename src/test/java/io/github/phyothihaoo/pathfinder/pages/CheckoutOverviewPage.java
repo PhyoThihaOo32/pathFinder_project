@@ -3,6 +3,7 @@ package io.github.phyothihaoo.pathfinder.pages;
 import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /** Step two of checkout: the order summary and totals. */
 public class CheckoutOverviewPage extends BasePage {
@@ -29,6 +30,7 @@ public class CheckoutOverviewPage extends BasePage {
     }
 
     public void finishOrder() {
-        click(FINISH_BUTTON);
+        clickExpecting(FINISH_BUTTON,
+                ExpectedConditions.urlContains("/checkout-complete.html"));
     }
 }

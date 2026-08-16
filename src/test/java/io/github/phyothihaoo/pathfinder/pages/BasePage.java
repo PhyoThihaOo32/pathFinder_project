@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -20,6 +21,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * {@link WebDriverWait} are more predictable and easier to reason about.
  */
 public abstract class BasePage {
+
+    /** How long to give the application to react to a click before assuming it was lost. */
+    private static final Duration RESPONSE_PROBE = Duration.ofSeconds(5);
 
     protected final WebDriver driver;
     protected final WebDriverWait wait;
@@ -47,6 +51,35 @@ public abstract class BasePage {
 
     protected void click(By locator) {
         clickable(locator).click();
+    }
+
+    /**
+     * Clicks, then confirms the application actually responded, clicking once more if it did not.
+     *
+     * <p>A click on this application can succeed at the WebDriver level and still do nothing.
+     * The page is a React SPA whose components re-render as state settles, and a click
+     * dispatched into that window lands on a node being replaced, so the handler never runs.
+     * WebDriver reports success because it did click something; the page simply sits there, and
+     * the next step fails somewhere unrelated with a confusing timeout.
+     *
+     * <p>Every click that is expected to navigate or change state goes through here, with the
+     * outcome it should produce. Verifying the outcome — rather than trusting the click — is
+     * what makes the suite deterministic on a loaded CI runner.
+     */
+    protected void clickExpecting(By locator, ExpectedCondition<?> outcome) {
+        click(locator);
+        if (!responded(outcome)) {
+            click(locator);
+        }
+    }
+
+    private boolean responded(ExpectedCondition<?> outcome) {
+        try {
+            new WebDriverWait(driver, RESPONSE_PROBE).until(outcome);
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     /**

@@ -123,13 +123,25 @@ predictable.
 Selenium Manager has shipped with Selenium since 4.6 and resolves drivers on its own, so the
 dependency is redundant.
 
-**Typing waits for the value to commit.**
-`BasePage.type` does not return until the field actually holds what was typed. The application
-uses controlled React inputs that commit asynchronously, so a fast follow-up click could
-otherwise submit a half-filled form. Likewise `CheckoutInformationPage.continueToOverview` waits
-for a definite outcome — navigation or a validation error — and re-clicks if neither arrived,
-because a click dispatched while the form re-renders can be swallowed entirely. Both changes
-were made in response to observed intermittent failures, not defensively.
+**Interactions confirm their own outcome.**
+This is the least obvious part of the framework and the part that took the most debugging.
+
+The application is a React SPA, and its components re-render as state settles. A click
+dispatched into that window lands on a node being replaced, so the handler never runs — while
+WebDriver reports success, because it did click something. The page just sits there, and the
+failure surfaces later in an unrelated step as a confusing timeout.
+
+Two helpers in `BasePage` close this gap:
+
+- `type` does not return until the field actually holds what was typed, so a fast follow-up
+  click cannot submit a half-filled form.
+- `clickExpecting` takes the outcome a click should produce — a URL change, a validation
+  error, a button swapping to "Remove" — and clicks once more if it does not arrive. Every
+  navigation and state-changing click goes through it.
+
+Both exist because of observed intermittent failures, not as speculative defence. The first
+version fixed only the checkout submit, where the flake was first seen; CI on a slower runner
+promptly failed on the same defect one click earlier, which is what prompted generalising it.
 
 ---
 
