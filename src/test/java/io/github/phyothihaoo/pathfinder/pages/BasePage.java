@@ -7,6 +7,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -24,6 +25,9 @@ public abstract class BasePage {
 
     /** How long to give the application to react to a click before assuming it was lost. */
     private static final Duration RESPONSE_PROBE = Duration.ofSeconds(5);
+
+    /** How many times to send a click that produces no visible response. */
+    private static final int CLICK_ATTEMPTS = 3;
 
     protected final WebDriver driver;
     protected final WebDriverWait wait;
@@ -67,10 +71,25 @@ public abstract class BasePage {
      * what makes the suite deterministic on a loaded CI runner.
      */
     protected void clickExpecting(By locator, ExpectedCondition<?> outcome) {
-        click(locator);
-        if (!responded(outcome)) {
-            click(locator);
+        for (int attempt = 1; attempt <= CLICK_ATTEMPTS; attempt++) {
+            // On a retry, a control that has disappeared means the page did respond after all,
+            // just more slowly than the probe allows. Stop clicking and wait it out.
+            if (attempt > 1 && !isPresent(locator)) {
+                break;
+            }
+            try {
+                click(locator);
+            } catch (WebDriverException pageMovedUnderUs) {
+                break;
+            }
+            if (responded(outcome)) {
+                return;
+            }
         }
+        // Never return on the strength of the click alone. This final wait is what guarantees
+        // the caller that the outcome actually happened, and it fails here — at the click that
+        // did not take — instead of somewhere unrelated further down the scenario.
+        wait.until(outcome);
     }
 
     private boolean responded(ExpectedCondition<?> outcome) {
@@ -78,6 +97,14 @@ public abstract class BasePage {
             new WebDriverWait(driver, RESPONSE_PROBE).until(outcome);
             return true;
         } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    private boolean isPresent(By locator) {
+        try {
+            return !driver.findElements(locator).isEmpty();
+        } catch (WebDriverException e) {
             return false;
         }
     }

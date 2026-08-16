@@ -94,6 +94,7 @@ public class InventoryPage extends BasePage {
 
     public void logout() {
         clickExpecting(MENU_BUTTON, ExpectedConditions.elementToBeClickable(LOGOUT_LINK));
-        clickExpecting(LOGOUT_LINK, ExpectedConditions.urlContains("saucedemo.com/"));
+        clickExpecting(LOGOUT_LINK,
+                ExpectedConditions.presenceOfElementLocated(By.id("login-button")));
     }
 }
