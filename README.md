@@ -136,12 +136,21 @@ Two helpers in `BasePage` close this gap:
 - `type` does not return until the field actually holds what was typed, so a fast follow-up
   click cannot submit a half-filled form.
 - `clickExpecting` takes the outcome a click should produce — a URL change, a validation
-  error, a button swapping to "Remove" — and clicks once more if it does not arrive. Every
-  navigation and state-changing click goes through it.
+  error, a button swapping to "Remove" — and retries if it does not arrive. Every navigation
+  and state-changing click goes through it, and it always finishes by waiting for the outcome,
+  so it cannot return on the strength of a click that did nothing.
 
-Both exist because of observed intermittent failures, not as speculative defence. The first
-version fixed only the checkout submit, where the flake was first seen; CI on a slower runner
-promptly failed on the same defect one click earlier, which is what prompted generalising it.
+Both exist because of observed failures, not as speculative defence.
+
+`clickExpecting` also has a scripted-click fallback, which deserves justifying because
+`element.click()` in production test code is usually a smell. Headless Chrome on CI turned out
+to drop the mouse events WebDriver synthesizes: the click reported success, the element was
+present, visible and topmost at its own centre, and nothing happened. Attaching listeners to
+both the element and the document showed an **empty event log for a native click** and a normal
+one for a scripted click on the same node — so no event was reaching the page at all. It was
+not a mis-aimed click, a stale node, or the application. The native click is therefore always
+tried first, and the fallback logs a warning when it fires, so a browser defect cannot quietly
+masquerade as an application failure.
 
 ---
 

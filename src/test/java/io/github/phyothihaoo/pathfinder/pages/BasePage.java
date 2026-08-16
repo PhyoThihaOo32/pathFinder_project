@@ -5,6 +5,7 @@ import io.github.phyothihaoo.pathfinder.drivers.DriverManager;
 import java.time.Duration;
 import java.util.List;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -12,6 +13,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shared behaviour for every page object: element lookup that always waits explicitly.
@@ -22,6 +25,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * {@link WebDriverWait} are more predictable and easier to reason about.
  */
 public abstract class BasePage {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BasePage.class);
 
     /** How long to give the application to react to a click before assuming it was lost. */
     private static final Duration RESPONSE_PROBE = Duration.ofSeconds(5);
@@ -58,17 +63,20 @@ public abstract class BasePage {
     }
 
     /**
-     * Clicks, then confirms the application actually responded, clicking once more if it did not.
+     * Clicks and confirms the application actually responded, rather than trusting the click.
      *
-     * <p>A click on this application can succeed at the WebDriver level and still do nothing.
-     * The page is a React SPA whose components re-render as state settles, and a click
-     * dispatched into that window lands on a node being replaced, so the handler never runs.
-     * WebDriver reports success because it did click something; the page simply sits there, and
-     * the next step fails somewhere unrelated with a confusing timeout.
+     * <p>Headless Chrome sometimes does not deliver the mouse events WebDriver synthesizes. The
+     * symptom is miserable to diagnose: the click reports success, no exception is raised, and
+     * the element is present, visible and topmost at its own centre — yet nothing happens. This
+     * was confirmed on CI by attaching listeners to the element and to the document, then
+     * clicking: a native click produced an empty event log, while a scripted click on the very
+     * same node fired normally and navigated. So no event was reaching the page at all; it was
+     * not a mis-aimed click, a stale node, or anything the application did.
      *
-     * <p>Every click that is expected to navigate or change state goes through here, with the
-     * outcome it should produce. Verifying the outcome — rather than trusting the click — is
-     * what makes the suite deterministic on a loaded CI runner.
+     * <p>So: click natively, because that is what a user does and it is what exercises the real
+     * event path. If several attempts produce no response, fall back to a scripted click and log
+     * it, so a browser-level defect cannot masquerade as an application failure. Either way the
+     * method ends by waiting for the outcome, and therefore cannot return unless it happened.
      */
     protected void clickExpecting(By locator, ExpectedCondition<?> outcome) {
         for (int attempt = 1; attempt <= CLICK_ATTEMPTS; attempt++) {
@@ -86,10 +94,26 @@ public abstract class BasePage {
                 return;
             }
         }
+
+        if (isPresent(locator)) {
+            LOG.warn("No response to {} native clicks on {} - the browser is most likely "
+                    + "dropping synthesized input. Falling back to a scripted click.",
+                    CLICK_ATTEMPTS, locator);
+            scriptedClick(locator);
+        }
+
         // Never return on the strength of the click alone. This final wait is what guarantees
         // the caller that the outcome actually happened, and it fails here — at the click that
         // did not take — instead of somewhere unrelated further down the scenario.
         wait.until(outcome);
+    }
+
+    private void scriptedClick(By locator) {
+        try {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", visible(locator));
+        } catch (WebDriverException e) {
+            LOG.warn("Scripted click on {} also failed: {}", locator, e.getMessage());
+        }
     }
 
     private boolean responded(ExpectedCondition<?> outcome) {
