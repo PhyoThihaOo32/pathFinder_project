@@ -1,77 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.searchProducts</groupId>
-  <artifactId>com.google.searchProducts</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  
+
+  <groupId>io.github.phyothihaoo</groupId>
+  <artifactId>pathfinder-automation</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <name>PathFinder Test Automation Framework</name>
+  <description>
+    Selenium 4 + Cucumber 7 + TestNG UI automation framework demonstrating the Page Object Model,
+    thread-safe parallel execution, and CI-ready headless runs.
+  </description>
+
+  <properties>
+    <!-- Encoding must be explicit, otherwise the build is platform dependent. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
+
+    <selenium.version>4.33.0</selenium.version>
+    <cucumber.version>7.22.1</cucumber.version>
+    <testng.version>7.11.0</testng.version>
+    <slf4j.version>2.0.17</slf4j.version>
+
+    <compiler.plugin.version>3.13.0</compiler.plugin.version>
+    <surefire.plugin.version>3.5.6</surefire.plugin.version>
+
+    <!-- Overridable from the command line, e.g. mvn test -DsuiteXmlFile=testng-regression.xml -->
+    <suiteXmlFile>testng.xml</suiteXmlFile>
+    <browser>chrome</browser>
+    <headless>false</headless>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Keeps every cucumber-* artifact on a single aligned version. -->
+      <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-bom</artifactId>
+        <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!--
+      Selenium 4.6+ ships Selenium Manager, which resolves and downloads the correct
+      driver binary automatically. WebDriverManager is no longer needed.
+    -->
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>${selenium.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-testng</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>${testng.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Binds SLF4J so Selenium's logging is not swallowed by the NOP logger. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.12.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
+        <version>${compiler.plugin.version}</version>
       </plugin>
-      
-       <plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
+        <version>${surefire.plugin.version}</version>
         <configuration>
           <suiteXmlFiles>
-            <suiteXmlFile>testng.xml</suiteXmlFile>
+            <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
           </suiteXmlFiles>
+          <!-- Forwards -Dbrowser / -Dheadless from the Maven CLI into the forked test JVM. -->
+          <systemPropertyVariables>
+            <browser>${browser}</browser>
+            <headless>${headless}</headless>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
-      <!--//https://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html-->
-      
     </plugins>
   </build>
-  
-  <dependencies> 
-	  
-	  <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
-<dependency>
-    <groupId>org.seleniumhq.selenium</groupId>
-    <artifactId>selenium-java</artifactId>
-    <version>3.141.59</version>
-</dependency>
 
-<!-- https://mvnrepository.com/artifact/org.testng/testng -->
-<dependency>
-    <groupId>org.testng</groupId>
-    <artifactId>testng</artifactId>
-    <version>6.14.3</version>
-    <scope>test</scope>
-</dependency>
-
-	  
-	  <!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-java -->
-<dependency>
-    <groupId>io.cucumber</groupId>
-    <artifactId>cucumber-java</artifactId>
-    <version>7.14.0</version>
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/io.cucumber/cucumber-testng -->
-<dependency>
-    <groupId>io.cucumber</groupId>
-    <artifactId>cucumber-testng</artifactId>
-    <version>7.14.0</version>
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/io.github.bonigarcia/webdrivermanager -->
-<dependency>
-    <groupId>io.github.bonigarcia</groupId>
-    <artifactId>webdrivermanager</artifactId>
-    <version>5.5.3</version>
-</dependency>
-
-	  
-  </dependencies>
-  
 </project>

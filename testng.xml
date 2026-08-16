@@ -1,11 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
-<suite name="Suite1" verbose="1">
-  <test name="SmokeTest">
+<!-- Default suite: the critical path, run sequentially. -->
+<suite name="PathFinder Smoke Suite" verbose="1">
+  <test name="Smoke">
     <classes>
-       <class name="runner.smokeTest"/>
+      <class name="io.github.phyothihaoo.pathfinder.runners.SmokeTestRunner"/>
     </classes>
   </test>
-
- 
 </suite>

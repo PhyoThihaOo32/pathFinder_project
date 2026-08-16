@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  Full regression, run in parallel.
+  data-provider-thread-count controls how many scenarios run at once; each gets its own
+  browser via the ThreadLocal in DriverManager. Raise it on a machine with more cores.
+
+  Run with: mvn test -DsuiteXmlFile=testng-regression.xml
+-->
+<suite name="PathFinder Regression Suite" verbose="1" data-provider-thread-count="3">
+  <test name="Regression">
+    <classes>
+      <class name="io.github.phyothihaoo.pathfinder.runners.RegressionTestRunner"/>
+    </classes>
+  </test>
+</suite>
