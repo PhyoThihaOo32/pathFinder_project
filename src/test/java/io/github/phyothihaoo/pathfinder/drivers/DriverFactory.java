@@ -44,9 +44,8 @@ public final class DriverFactory {
         driver.manage().timeouts()
                 .pageLoadTimeout(Duration.ofSeconds(Configuration.pageLoadTimeoutSeconds()));
 
-        if (!headless) {
-            driver.manage().window().maximize();
-        }
+        // No maximize() call: the window size is already set explicitly through browser options,
+        // and maximizing fails on the virtual display (Xvfb) that CI runs the browser under.
         return driver;
     }
 

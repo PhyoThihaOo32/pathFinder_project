@@ -142,15 +142,29 @@ Two helpers in `BasePage` close this gap:
 
 Both exist because of observed failures, not as speculative defence.
 
-`clickExpecting` also has a scripted-click fallback, which deserves justifying because
-`element.click()` in production test code is usually a smell. Headless Chrome on CI turned out
-to drop the mouse events WebDriver synthesizes: the click reported success, the element was
-present, visible and topmost at its own centre, and nothing happened. Attaching listeners to
+Both also carry a scripted fallback, which deserves justifying because `element.click()` in
+test code is normally a smell.
+
+Chrome on the CI runner drops the mouse and keyboard events WebDriver synthesizes. Clicks
+reported success while the element sat there present, visible and topmost at its own centre,
+and nothing happened; `sendKeys` returned while the field stayed empty. Attaching listeners to
 both the element and the document showed an **empty event log for a native click** and a normal
-one for a scripted click on the same node — so no event was reaching the page at all. It was
-not a mis-aimed click, a stale node, or the application. The native click is therefore always
-tried first, and the fallback logs a warning when it fires, so a browser defect cannot quietly
-masquerade as an application failure.
+one for a scripted click on the same node — no event was reaching the page at all. Ruled out
+along the way: element geometry, node replacement by React, page scroll position, and the
+Chrome flags for occluded and backgrounded renderers.
+
+Two things follow, and the project does both:
+
+- CI runs Chrome **headed under Xvfb** rather than `--headless=new`, which is where the problem
+  is worst. `maximize()` was dropped for the same reason — it fails on a virtual display, and
+  the window size is already set through browser options.
+- The native interaction is always tried first, because that is what exercises the real event
+  path. Only when it goes unanswered does the scripted fallback fire, and it logs a warning when
+  it does, so a browser defect cannot quietly masquerade as an application failure.
+
+The scripted typing fallback sets the value through React's own property setter and then fires
+`input` and `change`. Assigning to `element.value` would update the DOM without React noticing,
+and the app would go on submitting an empty field.
 
 ---
 

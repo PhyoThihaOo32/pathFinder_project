@@ -37,11 +37,15 @@ jobs:
       - name: Report Chrome version
         run: google-chrome --version
 
+      # Chrome runs headed on a virtual display rather than with --headless=new. That headless
+      # mode intermittently fails to deliver the mouse and keyboard events WebDriver
+      # synthesizes, so clicks and typing silently do nothing.
       - name: Run tests
         run: >
+          xvfb-run -a
           mvn -B test
           -DsuiteXmlFile=${{ github.event.inputs.suite || 'testng.xml' }}
-          -Dheadless=true
+          -Dheadless=false
 
       - name: Upload Cucumber report
         if: always()

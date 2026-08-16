@@ -147,7 +147,40 @@ public abstract class BasePage {
         if (!text.isEmpty()) {
             field.sendKeys(text);
         }
+        if (valueCommitted(locator, text)) {
+            return;
+        }
+        // Keystrokes get dropped for the same reason clicks do — see clickExpecting.
+        LOG.warn("Typing into {} did not register - the browser is most likely dropping "
+                + "synthesized input. Falling back to scripted input.", locator);
+        scriptedType(locator, text);
         wait.until(ExpectedConditions.attributeToBe(locator, "value", text));
+    }
+
+    private boolean valueCommitted(By locator, String text) {
+        try {
+            new WebDriverWait(driver, RESPONSE_PROBE)
+                    .until(ExpectedConditions.attributeToBe(locator, "value", text));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Sets the value through React's own property setter and then fires the events it listens
+     * for. Assigning to {@code element.value} directly would update the DOM without React
+     * noticing, and the application would go on submitting an empty field.
+     */
+    private void scriptedType(By locator, String text) {
+        ((JavascriptExecutor) driver).executeScript(
+                "const el = arguments[0], value = arguments[1];"
+                + "const setter = Object.getOwnPropertyDescriptor("
+                + "    window.HTMLInputElement.prototype, 'value').set;"
+                + "setter.call(el, value);"
+                + "el.dispatchEvent(new Event('input', { bubbles: true }));"
+                + "el.dispatchEvent(new Event('change', { bubbles: true }));",
+                visible(locator), text);
     }
 
     protected String textOf(By locator) {
